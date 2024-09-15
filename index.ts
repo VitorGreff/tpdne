@@ -1,19 +1,31 @@
-import { fetchImage, saveImage } from "./utils/Image";
-import fs from 'fs/promises'
+import { BskyAgent } from '@atproto/api'
+import { fetchImage } from "./utils/Image";
+import { updateProfileWithAvatar, updateProfileWithBio, updateProfileWithWallpaper } from './bsky/Update';
+import { getConfig } from './utils/Env';
 
 async function main() {
   while (true) {
     try {
-      const result = await fetchImage('https://thispersondoesnotexist.com')
-      console.log(`TPDNE: Fetched image of type: ${result.contentType}`)
-      console.log(`TPDNE: Fetched image of size: ${result.blob.size}`)
+      const avatarImage = await fetchImage('https://thispersondoesnotexist.com')
+      const headerImage = await fetchImage('https://picsum.photos/1500/500')
+      console.log(`TPDNE: Fetched image of type: ${avatarImage.contentType}`)
+      console.log(`TPDNE: Fetched image of size: ${avatarImage.blob.size} bytes`)
 
-      const filePath = './images/test.jpeg'
-      await fs.mkdir('./images', { recursive: true })
-      await saveImage(result.blob, filePath)
+      // load env vars
+      const config = getConfig()
+      const agent = new BskyAgent({ service: 'https://bsky.social' });
+      await agent.login({
+        identifier: config.BSKY_IDENTIFIER,
+        password: config.BSKY_PASSWORD
+      })
+
+      await updateProfileWithAvatar(agent, avatarImage.blob)
+      await updateProfileWithWallpaper(agent, headerImage.blob)
+      await updateProfileWithBio(agent)
 
     } catch (e) {
       if (e instanceof Error) {
+        console.error(`error: ${e.message}`)
         process.exit(1)
       } else {
         process.stderr.write(`unknown error ocurred`)

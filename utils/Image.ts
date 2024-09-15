@@ -22,11 +22,6 @@ export async function fetchImage(url: string): Promise<FetchedImage> {
     return { blob, contentType }
 
   } catch (e) {
-    if (e instanceof Error) {
-      console.error(`Error fetching image" ${e.message}"`)
-    } else {
-      console.error(`Unknow error ocurred while fetching image`)
-    }
     throw e
   }
 }
@@ -37,12 +32,6 @@ export async function saveImage(imageBlog: Blob, filePath: string): Promise<void
     const uint8Array = new Uint8Array(arrayBuffer)
     await fs.writeFile(filePath, uint8Array)
   } catch (e) {
-    if (e instanceof Error) {
-      console.error(`Error saving image" ${e.message}"`)
-    } else {
-      console.error(`Unknow error ocurred while saving image`)
-    }
     throw e
   }
-
 }
